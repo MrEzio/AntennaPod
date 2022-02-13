@@ -4,6 +4,8 @@ import de.danoeh.antennapod.parser.media.id3.model.FrameHeader;
 import de.danoeh.antennapod.parser.media.id3.model.TagHeader;
 import org.apache.commons.io.input.CountingInputStream;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,13 +16,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+@RunWith(RobolectricTestRunner.class)
 public class Id3ReaderTest {
     @Test
     public void testReadString() throws IOException {
         byte[] data = {
-            ID3Reader.ENCODING_ISO,
-            'T', 'e', 's', 't',
-            0 // Null-terminated
+                ID3Reader.ENCODING_ISO,
+                'T', 'e', 's', 't',
+                0 // Null-terminated
         };
         CountingInputStream inputStream = new CountingInputStream(new ByteArrayInputStream(data));
         String string = new ID3Reader(inputStream).readEncodingAndString(1000);
@@ -30,12 +33,12 @@ public class Id3ReaderTest {
     @Test
     public void testReadMultipleStrings() throws IOException {
         byte[] data = {
-            ID3Reader.ENCODING_ISO,
-            'F', 'o', 'o',
-            0, // Null-terminated
-            ID3Reader.ENCODING_ISO,
-            'B', 'a', 'r',
-            0 // Null-terminated
+                ID3Reader.ENCODING_ISO,
+                'F', 'o', 'o',
+                0, // Null-terminated
+                ID3Reader.ENCODING_ISO,
+                'B', 'a', 'r',
+                0 // Null-terminated
         };
         CountingInputStream inputStream = new CountingInputStream(new ByteArrayInputStream(data));
         ID3Reader reader = new ID3Reader(inputStream);
@@ -46,8 +49,8 @@ public class Id3ReaderTest {
     @Test
     public void testReadingLimit() throws IOException {
         byte[] data = {
-            ID3Reader.ENCODING_ISO,
-            'A', 'B', 'C', 'D'
+                ID3Reader.ENCODING_ISO,
+                'A', 'B', 'C', 'D'
         };
         CountingInputStream inputStream = new CountingInputStream(new ByteArrayInputStream(data));
         ID3Reader reader = new ID3Reader(inputStream);
@@ -58,14 +61,14 @@ public class Id3ReaderTest {
     @Test
     public void testReadUtf16RespectsBom() throws IOException {
         byte[] data = {
-            ID3Reader.ENCODING_UTF16_WITH_BOM,
-            (byte) 0xff, (byte) 0xfe, // BOM: Little-endian
-            'A', 0, 'B', 0, 'C', 0,
-            0, 0, // Null-terminated
-            ID3Reader.ENCODING_UTF16_WITH_BOM,
-            (byte) 0xfe, (byte) 0xff, // BOM: Big-endian
-            0, 'D', 0, 'E', 0, 'F',
-            0, 0, // Null-terminated
+                ID3Reader.ENCODING_UTF16_WITH_BOM,
+                (byte) 0xff, (byte) 0xfe, // BOM: Little-endian
+                'A', 0, 'B', 0, 'C', 0,
+                0, 0, // Null-terminated
+                ID3Reader.ENCODING_UTF16_WITH_BOM,
+                (byte) 0xfe, (byte) 0xff, // BOM: Big-endian
+                0, 'D', 0, 'E', 0, 'F',
+                0, 0, // Null-terminated
         };
         CountingInputStream inputStream = new CountingInputStream(new ByteArrayInputStream(data));
         ID3Reader reader = new ID3Reader(inputStream);
@@ -76,10 +79,10 @@ public class Id3ReaderTest {
     @Test
     public void testReadUtf16NullPrefix() throws IOException {
         byte[] data = {
-            ID3Reader.ENCODING_UTF16_WITH_BOM,
-            (byte) 0xff, (byte) 0xfe, // BOM
-            0x00, 0x01, // Latin Capital Letter A with macron (Ā)
-            0, 0, // Null-terminated
+                ID3Reader.ENCODING_UTF16_WITH_BOM,
+                (byte) 0xff, (byte) 0xfe, // BOM
+                0x00, 0x01, // Latin Capital Letter A with macron (Ā)
+                0, 0, // Null-terminated
         };
         CountingInputStream inputStream = new CountingInputStream(new ByteArrayInputStream(data));
         String string = new ID3Reader(inputStream).readEncodingAndString(1000);
@@ -89,8 +92,8 @@ public class Id3ReaderTest {
     @Test
     public void testReadingLimitUtf16() throws IOException {
         byte[] data = {
-            ID3Reader.ENCODING_UTF16_WITHOUT_BOM,
-            'A', 0, 'B', 0, 'C', 0, 'D', 0
+                ID3Reader.ENCODING_UTF16_WITHOUT_BOM,
+                'A', 0, 'B', 0, 'C', 0, 'D', 0
         };
         CountingInputStream inputStream = new CountingInputStream(new ByteArrayInputStream(data));
         ID3Reader reader = new ID3Reader(inputStream);
@@ -119,12 +122,12 @@ public class Id3ReaderTest {
 
     public static byte[] generateFrameHeader(String id, int size) {
         return concat(
-            id.getBytes(StandardCharsets.ISO_8859_1), // Frame ID
-            new byte[] {
-                (byte) (size >> 24), (byte) (size >> 16),
-                (byte) (size >> 8), (byte) (size), // Size
-                0, 0 // Flags
-            });
+                id.getBytes(StandardCharsets.ISO_8859_1), // Frame ID
+                new byte[] {
+                        (byte) (size >> 24), (byte) (size >> 16),
+                        (byte) (size >> 8), (byte) (size), // Size
+                        0, 0 // Flags
+                });
     }
 
     static byte[] generateId3Header(int size) {

@@ -5,6 +5,8 @@ import de.danoeh.antennapod.model.feed.EmbeddedChapterImage;
 import de.danoeh.antennapod.parser.media.id3.model.FrameHeader;
 import org.apache.commons.io.input.CountingInputStream;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+@RunWith(RobolectricTestRunner.class)
 public class ChapterReaderTest {
     private static final byte CHAPTER_WITHOUT_SUBFRAME_START_TIME = 23;
     private static final byte[] CHAPTER_WITHOUT_SUBFRAME = {
@@ -66,14 +69,14 @@ public class ChapterReaderTest {
     @Test
     public void testReadChapterWithTitle() throws IOException, ID3ReaderException {
         byte[] title = {
-            ID3Reader.ENCODING_ISO,
-            'H', 'e', 'l', 'l', 'o', // Title
-            0 // Null-terminated
+                ID3Reader.ENCODING_ISO,
+                'H', 'e', 'l', 'l', 'o', // Title
+                0 // Null-terminated
         };
         byte[] chapterData = Id3ReaderTest.concat(
-            CHAPTER_WITHOUT_SUBFRAME,
-            Id3ReaderTest.generateFrameHeader(ChapterReader.FRAME_ID_TITLE, title.length),
-            title);
+                CHAPTER_WITHOUT_SUBFRAME,
+                Id3ReaderTest.generateFrameHeader(ChapterReader.FRAME_ID_TITLE, title.length),
+                title);
         FrameHeader header = new FrameHeader(ChapterReader.FRAME_ID_CHAPTER, chapterData.length, (short) 0);
         CountingInputStream inputStream = new CountingInputStream(new ByteArrayInputStream(chapterData));
         ChapterReader reader = new ChapterReader(inputStream);
