@@ -28,9 +28,9 @@ import de.danoeh.antennapod.activity.MainActivity;
 import de.danoeh.antennapod.activity.PreferenceActivity;
 import de.danoeh.antennapod.adapter.NavListAdapter;
 import de.danoeh.antennapod.core.dialog.ConfirmationDialog;
-import de.danoeh.antennapod.core.event.FeedListUpdateEvent;
-import de.danoeh.antennapod.core.event.QueueEvent;
-import de.danoeh.antennapod.core.event.UnreadItemsUpdateEvent;
+import de.danoeh.antennapod.event.FeedListUpdateEvent;
+import de.danoeh.antennapod.event.QueueEvent;
+import de.danoeh.antennapod.event.UnreadItemsUpdateEvent;
 import de.danoeh.antennapod.dialog.TagSettingsDialog;
 import de.danoeh.antennapod.model.feed.Feed;
 import de.danoeh.antennapod.core.preferences.UserPreferences;
@@ -50,6 +50,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -157,16 +158,16 @@ public class NavDrawerFragment extends Fragment implements SharedPreferences.OnS
             };
             removeAllNewFlagsConfirmationDialog.createNewDialog().show();
             return true;
-        } else if (itemId == R.id.add_to_folder) {
-            TagSettingsDialog.newInstance(feed.getPreferences()).show(getChildFragmentManager(), TagSettingsDialog.TAG);
+        } else if (itemId == R.id.edit_tags) {
+            TagSettingsDialog.newInstance(Collections.singletonList(feed.getPreferences()))
+                    .show(getChildFragmentManager(), TagSettingsDialog.TAG);
             return true;
         } else if (itemId == R.id.rename_item) {
             new RenameFeedDialog(getActivity(), feed).show();
             return true;
         } else if (itemId == R.id.remove_item) {
-            RemoveFeedDialog.show(getContext(), feed, () -> {
-                ((MainActivity) getActivity()).loadFragment(EpisodesFragment.TAG, null);
-            });
+            ((MainActivity) getActivity()).loadFragment(EpisodesFragment.TAG, null);
+            RemoveFeedDialog.show(getContext(), feed);
             return true;
         }
         return super.onContextItemSelected(item);
@@ -318,7 +319,7 @@ public class NavDrawerFragment extends Fragment implements SharedPreferences.OnS
                         ((MainActivity) getActivity()).getBottomSheet()
                                 .setState(BottomSheetBehavior.STATE_COLLAPSED);
                     } else {
-                        NavDrawerData.FolderDrawerItem folder = ((NavDrawerData.FolderDrawerItem) clickedItem);
+                        NavDrawerData.TagDrawerItem folder = ((NavDrawerData.TagDrawerItem) clickedItem);
                         if (openFolders.contains(folder.name)) {
                             openFolders.remove(folder.name);
                         } else {
@@ -388,11 +389,11 @@ public class NavDrawerFragment extends Fragment implements SharedPreferences.OnS
         for (NavDrawerData.DrawerItem item : items) {
             item.setLayer(layer);
             flatItems.add(item);
-            if (item.type == NavDrawerData.DrawerItem.Type.FOLDER) {
-                NavDrawerData.FolderDrawerItem folder = ((NavDrawerData.FolderDrawerItem) item);
+            if (item.type == NavDrawerData.DrawerItem.Type.TAG) {
+                NavDrawerData.TagDrawerItem folder = ((NavDrawerData.TagDrawerItem) item);
                 folder.isOpen = openFolders.contains(folder.name);
                 if (folder.isOpen) {
-                    flatItems.addAll(makeFlatDrawerData(((NavDrawerData.FolderDrawerItem) item).children, layer + 1));
+                    flatItems.addAll(makeFlatDrawerData(((NavDrawerData.TagDrawerItem) item).children, layer + 1));
                 }
             }
         }

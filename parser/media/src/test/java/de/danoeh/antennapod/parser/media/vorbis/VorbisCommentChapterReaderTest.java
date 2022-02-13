@@ -16,7 +16,6 @@ public class VorbisCommentChapterReaderTest {
 
     @Test
     public void testRealFilesAuphonic() throws IOException, VorbisCommentReaderException {
-        testRealFileAuphonic("auphonic.ogg");
         testRealFileAuphonic("auphonic.opus");
     }
 

@@ -20,7 +20,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.app.ServiceCompat;
 
 import de.danoeh.antennapod.core.R;
-import de.danoeh.antennapod.core.sync.SyncService;
 import org.apache.commons.io.FileUtils;
 import org.greenrobot.eventbus.EventBus;
 
@@ -40,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import de.danoeh.antennapod.core.event.DownloadEvent;
-import de.danoeh.antennapod.core.event.FeedItemEvent;
+import de.danoeh.antennapod.event.FeedItemEvent;
 import de.danoeh.antennapod.model.feed.Feed;
 import de.danoeh.antennapod.model.feed.FeedItem;
 import de.danoeh.antennapod.model.feed.FeedMedia;
@@ -227,10 +226,6 @@ public class DownloadService extends Service {
         }
         unregisterReceiver(cancelDownloadReceiver);
 
-        // if this was the initial gpodder sync, i.e. we just synced the feeds successfully,
-        // it is now time to sync the episode actions
-        SyncService.sync(this);
-
         // start auto download in case anything new has shown up
         DBTasks.autodownloadUndownloadedItems(getApplicationContext());
     }
@@ -326,18 +321,8 @@ public class DownloadService extends Service {
                     if (item == null) {
                         return;
                     }
-                    boolean unknownHost = status.getReason() == DownloadError.ERROR_UNKNOWN_HOST;
-                    boolean unsupportedType = status.getReason() == DownloadError.ERROR_UNSUPPORTED_TYPE;
-                    boolean wrongSize = status.getReason() == DownloadError.ERROR_IO_WRONG_SIZE;
-
-                    if (! (unknownHost || unsupportedType || wrongSize)) {
-                        try {
-                            DBWriter.saveFeedItemAutoDownloadFailed(item).get();
-                        } catch (ExecutionException | InterruptedException e) {
-                            Log.d(TAG, "Ignoring exception while setting item download status");
-                            e.printStackTrace();
-                        }
-                    }
+                    item.increaseFailedAutoDownloadAttempts(System.currentTimeMillis());
+                    DBWriter.setFeedItem(item);
                     // to make lists reload the failed item, we fake an item update
                     EventBus.getDefault().post(FeedItemEvent.updated(item));
                 }
